@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            line-height: 1.6;
+        }
+
+
+        .login-container {
+            width: 400px;
+            padding: 40px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5), 0 6px 20px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            background-image: linear-gradient(to top, #f5f5f5, #ffffff);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+
+        .main-title {
+            font-size: 2.5em;
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 2s ease-in-out, float 6s ease-in-out infinite;
+        }
+
+
+        .logpage input,
+        .logpage button {
+            padding: 10px 15px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: calc(100% - 30px);
+            box-sizing: border-box;
+        }
+
+        .logpage button {
+            background-color: #333;
+            color: white;
+            cursor: pointer;
+        }
+
+        .logpage {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f4f4f4;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .chatpage {
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            border-radius: 10px;
+
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+
+            background: linear-gradient(to bottom, #ffffff, #f0f0f0);
+
+        }
+
+
+        .chatbox {
+            flex: 1;
+            padding: 15px;
+            background-color: #EEEEEE;
+            overflow-y: auto;
+
+            margin-bottom: 10px;
+
+        }
+
+
+        .msgbox {
+            height: 100px;
+            display: flex;
+            border-radius: 5px;
+
+        }
+
+
+        .msgbox textarea {
+            flex: 1;
+            padding: 15px;
+            font-size: 20px;
+        }
+
+
+        .msgbox button {
+            width: 100px;
+            background-color: #B3251A;
+
+            color: white;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+
+            font-weight: bold;
+
+            transition: background-color 0.3s ease;
+
+        }
+
+        .msgbox button:hover {
+            background-color: #C94A39;
+
+        }
+
+
+
+
+        .logpage {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .item {
+            clear: both;
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+            margin-top: 10px;
+        }
+
+
+        .item .msg {
+            max-width: 70%;
+            background-color: #fff;
+            border-radius: 5px;
+
+            padding: 10px;
+            margin-left: 20px;
+            margin-right: 20px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+
+            position: relative;
+        }
+
+
+        .item .msg::before {
+            content: "";
+            position: absolute;
+            top: 5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent;
+            border-right-color: #fff;
+            left: -10px;
+        }
+
+
+        .item.me {
+            flex-direction: row;
+        }
+
+
+        .item.me .msg {
+            background-color: #B5251A;
+            color: #fff;
+        }
+
+
+        .item.me .msg::before {
+            border-color: transparent;
+            border-left-color: #B5251A;
+            left: initial;
+            right: -10px;
+        }
+
+
+        .item .uname {
+            width: 60px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: clip;
+        }
+
+
+        .title {
+            line-height: 38px;
+            background-color: #333;
+            color: #fff;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 15px;
+        }
+
+        .info {
+            text-align: center;
+            color: #777;
+            margin: 10px;
+        }
+    </style>
+    <script src="http://localhost:5050/socket.io/socket.io.js"></script>
+</head>
+
+<body>
+    <div class="logpage" id="logpage">
+        <div class="login-container">
+            <h1 class="main-title">Web Chat</h1>
+            <input type="text" placeholder="Please enter the username" id="username">
+            <button onclick="login()">Join chat</button>
+        </div>
+    </div>
+    <div class="chatpage" id="chatpage">
+        <div class="title">
+            <h3>Web Chat System</h3>
+            <p><span id="me"></span> | <span onclick="window.location.reload()">Log out</span></p>
+        </div>
+        <div class="chatbox" id="chatbox">
+            <p id="online"></p>
+        </div>
+        <div class="msgbox">
+            <textarea name="" id="msgbox" cols="30" rows="10"></textarea>
+            <button onclick="sendMsg()">Send</button>
+        </div>
+        <input type="file" id="fileInput">
+        <button onclick="uploadFile()">Upload</button>
+    </div>
+    <!-- 
+    1. 引入socket.io        √
+    2. 连接socket服务器      √
+        a.用户名，b用户id      √
+    3. 发送聊天信息           √
+    4. 接收聊天信息           √
+ -->
+    <script>
+        this.userid = new Date().getTime();  //用户名,用户id取当前的事件毫秒 this指window全局
+
+        this.socket = io.connect("ws://localhost:5050"); // 连接socket服务器
+        function login() {
+            this.username = username.value; //设置用户填入的用户名
+            logpage.style.display = "none";   // 隐藏登录页面
+            chatpage.style.display = "flex"; // 显示聊天页面
+            me.innerHTML = this.username; // 设置当前用户
+            // 发送登录信息给服务器
+            this.socket.emit("login", { userid: this.userid, username: this.username })
+        }
+        //  接收登录信息
+        this.socket.on("login", obj => {
+            console.log(obj);
+            let arr = [];
+            for (let k in obj.onlineUsers) {
+                arr.push(obj.onlineUsers[k]);
+            }
+            // 把每个一个信息放入数组；obj.onlineUsers 当前在线用户的列表        
+            online.innerHTML = "Currently online users: " + obj.onlineCount + " people, Online user list: " + arr.join("、");
+            let p = document.createElement("p");
+            p.className = "info";
+            p.innerHTML = obj.user.username + " joined the chat room";
+            chatbox.append(p);
+
+        })
+        this.socket.on("logout", obj => {
+            let arr = [];
+            for (let k in obj.onlineUsers) {
+                arr.push(obj.onlineUsers[k]);
+            }
+            // 把每个一个信息放入数组；obj.onlineUsers 当前在线用户的列表        
+            online.innerHTML = "Currently online users:" + obj.onlineCount + "people,Online user list:" + arr.join("、");
+            let p = document.createElement("p");
+            p.className = "info";
+            p.innerHTML = obj.user.username + "left the chat room";
+            chatbox.append(p);
+
+        })
+        // 发送聊天信息
+        function sendMsg() {
+            let msg = msgbox.value;
+            let obj = { msg, userid: this.userid, username: this.username }
+            this.socket.emit("message", obj);  //message事件发送数据
+            msgbox.value = "";//清空文本框内容
+        }
+        // 接受信息
+        this.socket.on("message", obj => {
+            let div = document.createElement("div");// 创建一个div元素
+            if (obj.userid == this.userid) { // 如果id时自己加class
+                div.className = "item me";
+            } else {
+                div.className = "item";//设置用户名item；
+            }
+
+            div.innerHTML = `<div class="msg">${obj.msg}</div><span class="uname">${obj.username}</span>`;
+            chatbox.append(div);// 插入到聊天对话框
+
+        })
+
+
+
+        function uploadFile() {
+            const input = document.getElementById('fileInput');
+            const file = input.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // Emit the file URL using Socket.io
+                    socket.emit('file-shared', data.filePath);
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+
+    </script>
+
+
+</body>
+
+</html>
